@@ -58,4 +58,29 @@ print(data_df.iloc[1:-1].TP.to_frame())
 # Show the first and last TP values on data_df
 print(data_df.iloc[[0, -1],][['TP']])
 
-#print(data_df)
+# Modify the 'Flow_FC101_outlet_from_T102' of '29-01-16' to value 205
+data_df.loc['29-01-16', 'Flow_FC101_outlet_from_T102'] = 205
+
+# Modify the 'VFA meq/l' value to a calculated value from the formula
+data_df['VFA meq/l'] = round(data_df['VFA mg/l'] * 16.65 / 1000)
+
+# Masks
+mask_1 = data_df['TSS'] == 2
+print(mask_1)
+
+mask_2 = data_df['TCOD'] < 8000
+print(data_df[mask_2])
+
+mask_3 = (data_df['Flow_FC101_raw_sewage'] > 0) & (data_df['pH'] > 5)
+print(data_df[mask_3])
+
+# DataFrame summary statistics
+print(data_df.describe())
+print('The average level in the tank is {}% and the min pH value is {}'.format(data_df.Level.mean(), data_df.pH.min()))
+
+
+# DataFrame basic plottings
+print(data_df.pH.plot())
+
+print(plt.hist(data_df.TN))
+
