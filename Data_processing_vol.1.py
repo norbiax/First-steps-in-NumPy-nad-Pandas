@@ -5,11 +5,49 @@ from datetime import datetime
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-T103_df = pd.read_csv('Buffer_Tank_data.csv')
+print('***Hello in "Data processing vol. 1***')
 
-T103_df = pd.read_csv('Buffer_Tank_data.csv', header=None)
 
-T103_df.columns = ['Dzień/day',
+def conv_dates_series(x):  # changing strings to date format
+    date_list = x.values.tolist()
+    new_date_list = ['20' + i[-2:] + '-' + i[3:5] + '-' + i[0:2] for i in date_list]
+    new_type_data_list = [datetime.strptime(i, "%Y-%m-%d") for i in new_date_list]
+    return new_type_data_list
+
+def set_index(df):
+    df.set_index('Data/Date', inplace=True)
+    return df
+
+def drop_nan_values(x): # mask of missing values from column
+    lst_no_nan = x.dropna()
+    return lst_no_nan
+
+def clean_values(y):
+    num_list = y.values.tolist()
+    new_num_list = []
+    for v in num_list:
+        if type(v) == str:
+            v = float(v.replace('<', '').replace('>', '').replace('\xa0', '').replace(',', '.').replace('..','.'))
+        new_num_list.append(v)
+    y = new_num_list
+    return y
+
+def dict(columns):
+    d = {x: columns[x] for x in range(1, len(columns))}
+    print("The column indexes are as follows :  " + str(d))
+    return d
+
+con = "Y"
+while con == "Y":
+
+    q1 = input("Which csv file would you like to choose? Buffer_tank_data.csv or Reactor_data.csv? \n")
+
+    def process():
+        global con
+        df = pd.read_csv(str(q1), header = None)
+        if q1 == "Buffer_tank_data.csv":
+            df.columns = [
+                   'Dzień/day',
                    'Data/Date',
                    'Przepływ/Flow - z zakladu',
                    'Przepływ/Flow F1',
@@ -41,51 +79,52 @@ T103_df.columns = ['Dzień/day',
                    'TP',
                    'PO4',
                    'Cl'
-]
-print(T103_df.shape)
-print(T103_df.head())
-print(T103_df.tail(3))
-print(T103_df.dtypes)
+                ]
+        if q1 == 'Reactor_data.csv':
+            df.columns = [
+                   'Dzień/day',
+                   'Data/Date',
+                   'pH',
+                   'T',
+                   'TCOD',
+                   'SCOD',
+                   'Zawiesina ogolna/TSS',
+                   'Zawiesina lotna/VSS',
+                   'VSS/TSS',
+                   'LKT/VFA [mg/l]',
+                   'LKT/VFA [meq/l]',
+                   'Ca',
+                   'TN',
+                   'N-NH4',
+                   'TP',
+                   'PO4'
+                ]
 
-def conv_dates_series(x): # changing strings to date format
-    date_list = x.values.tolist()
-    new_date_list = ['20' + i[-2:] + '-' + i[3:5] + '-' + i[0:2] for i in date_list]
-    new_type_data_list = [datetime.strptime(i, "%Y-%m-%d") for i in new_date_list]
-    return new_type_data_list
+        df['Data/Date'] = pd.Series(conv_dates_series(df['Data/Date']))
+        set_index(df)
+        print(df.head())
+        d = dict(df.columns)
 
-T103_df['Data/Date'] = pd.Series(conv_dates_series(T103_df['Data/Date']))
+        ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-30: \n"))
+        ch_col = d[ch_num]
+        print(ch_col)
 
-T103_df.set_index('Data/Date', inplace=True)
+        col_nam = str(ch_col)
 
-print(T103_df.info())
+        new_df = pd.DataFrame({col_nam: clean_values(drop_nan_values(df[col_nam])), }, columns=[col_nam])
+        new_df.index = drop_nan_values(df[col_nam]).index
+        print(new_df)
 
-def drop_nan_values(x): # mask of missing values from column
-    lst_no_nan = x.dropna()
-    print(lst_no_nan)
-    return lst_no_nan
+        plt.plot(new_df.index, new_df)
+        plt.show()
 
-def clean_values(y): # removing undesirable signs from the values to obtain specific numbers
-    num_list = y.values.tolist()
-    new_num_list = []
-    for v in num_list:
-        if type(v) == str:
-            v = float(v.replace('<', '').replace('>', '').replace('\xa0', '').replace(',', '.').replace('..','.'))
-        new_num_list.append(v)
-    y = new_num_list
-    return y
+        con = input("Would like to choose another file? [Y/N] \n")
+        return df
 
-d = {x : T103_df.columns[x] for x in range(1, len(T103_df.columns))}
-print("The column indexes are as follows :  " + str(d))
-ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-30: \n"))
-ch_col = d[ch_num]
-print(ch_col)
 
-col_nam = str(ch_col)
+    if q1 == "Buffer_tank_data.csv" or q1 == "Reactor_data.csv":
+        process()
 
-df = pd.DataFrame({col_nam: clean_values(drop_nan_values(T103_df[col_nam])),}, columns=[col_nam])
-df.index = drop_nan_values(T103_df[col_nam]).index
-print(df)
-
-plt.plot(df.index, df)
-plt.show()
-
+    else:
+        print("File does not exist. Choose between Buffer_tank_data.csv or Reactor_data.csv.")
+        con = input("Would like to choose another file? [Y/N] \n")
