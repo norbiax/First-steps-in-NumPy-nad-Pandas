@@ -7,30 +7,34 @@ register_matplotlib_converters()
 
 print('***Hello in "Data processing vol. 1***')
 
-
 def conv_dates_series(x):  # changing strings to date format
     date_list = x.values.tolist()
     new_date_list = ['20' + i[-2:] + '-' + i[3:5] + '-' + i[0:2] for i in date_list]
     new_type_data_list = [datetime.strptime(i, "%Y-%m-%d") for i in new_date_list]
     return new_type_data_list
 
+
 def set_index(df):
     df.set_index('Data/Date', inplace=True)
     return df
 
-def drop_nan_values(x): # mask of missing values from column
+
+def drop_nan_values(x):  # mask of missing values from column
     lst_no_nan = x.dropna()
     return lst_no_nan
+
 
 def clean_values(y):
     num_list = y.values.tolist()
     new_num_list = []
     for v in num_list:
         if type(v) == str:
-            v = float(v.replace('<', '').replace('>', '').replace('\xa0', '').replace(',', '.').replace('..','.'))
+            v = float(
+                v.replace('<', '').replace('>', '').replace('\xa0', '').replace(',', '.').replace('..', '.'))
         new_num_list.append(v)
     y = new_num_list
     return y
+
 
 def dict(columns):
     d = {x: columns[x] for x in range(1, len(columns))}
@@ -105,22 +109,31 @@ while con == "Y":
         print(df.head())
         d = dict(df.columns)
 
-        ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-30: \n"))
-        ch_col = d[ch_num]
-        print(ch_col)
+        try:
+            ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-30: \n"))
+            ch_col = d[ch_num]
+            print(ch_col)
 
-        col_nam = str(ch_col)
+            col_nam = str(ch_col)
 
-        new_df = pd.DataFrame({col_nam: clean_values(drop_nan_values(df[col_nam])), }, columns=[col_nam])
-        new_df.index = drop_nan_values(df[col_nam]).index
-        print(new_df)
+            new_df = pd.DataFrame({col_nam: clean_values(drop_nan_values(df[col_nam])), }, columns=[col_nam])
+            new_df.index = drop_nan_values(df[col_nam]).index
+            print(new_df)
 
-        plt.plot(new_df.index, new_df)
-        plt.show()
+            plt.plot(new_df.index, new_df)
+            plt.show()
 
-        con = input("Would like to choose another file? [Y/N] \n")
+        except KeyError:
+            print('Incorrect value. Must be an integer from range 1-30')
+            con = input("Would like to choose another file? [Y/N] \n")
+
+        except ValueError:
+            print('Incorrect value. Must be an integer from range 1-30')
+            con = input("Would like to choose another file? [Y/N] \n")
+        else:
+            con = input("Would like to choose another file? [Y/N] \n")
+
         return df
-
 
     if q1 == "Buffer_tank_data.csv" or q1 == "Reactor_data.csv":
         process()
