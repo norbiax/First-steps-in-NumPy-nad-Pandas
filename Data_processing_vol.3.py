@@ -5,7 +5,7 @@ from datetime import datetime
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-print('*** Hello in "Data processing vol. 1 "***')
+print('***Hello in "Data processing vol. 2***')
 
 def conv_dates_series(x):  # changing strings to date format
     date_list = x.values.tolist()
@@ -40,7 +40,6 @@ def dict(columns):
     d = {x: columns[x] for x in range(1, len(columns))}
     print("The column indexes are as follows :  " + str(d))
     return d
-
 
 con = "Y"
 con_1 = "Y"
@@ -109,15 +108,15 @@ while con == "Y":
         df['Data/Date'] = pd.Series(conv_dates_series(df['Data/Date']))
         set_index(df)
         print(df.head())
+        d = dict(df.columns)
 
 
+
+        con_1 = "Y"
         while con_1 == "Y":
-            d = dict(df.columns)
-
+            ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-"
+                               + str(len(df.columns) - 1) + ": \n"))
             try:
-
-                ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-"
-                                   + str(len(df.columns) - 1) + ": \n"))
                 ch_col = d[ch_num]
                 print(ch_col)
 
@@ -130,35 +129,32 @@ while con == "Y":
                 plt.plot(new_df.index, new_df)
                 plt.show()
 
-                con_1 = input("Choose next parameter in this file [Y/N]\n")
-                if con_1 == "Y":
-                    continue
-
             except KeyError:
-                con_1 = input('Incorrect value. Must be an integer from range 1-' + str(len(df.columns) - 1)
-                              + "\nWould like to enter a new value? [Y/N] \n")
-                if con_1 == "Y":
-                    continue
+                print('Incorrect value. Must be an integer from range 1-' + str(len(df.columns)-1))
+                con_1 = input("Would like to enter a new value? [Y/N] \n")
 
             except ValueError:
-                con_1 = input('Incorrect value. Must be an integer from range 1-' + str(len(df.columns)-1)
-                              + "\nWould like to enter a new value? [Y/N] \n")
-                if con_1 == "Y":
-                    continue
+                print('Incorrect value. Must be an integer from range 1-' + str(len(df.columns)-1))
+                con_1 = input("Would like to enter a new value? [Y/N] \n")
+            else:
 
-        con_1 = input("Choose another file [Y/N]\n")
+                q2 = input("Would like to (enter 1, 2 or 3):\n"
+                            "1. Choose next parameter in this file\n"
+                            "2. Choose another file\n"
+                            "3. End\n")
+                if q2 == "1":
+                    con_1 = "Y"
+                if q2 == "2":
+                    con = "Y"
+                else:
+                    quit()
 
-        if con_1 == "N":
-            print("Good bye!")
-            quit()
-        return df
+
+            return df
 
     if q1 == "Buffer_tank_data.csv" or q1 == "Reactor_data.csv":
         process()
 
     else:
-        con = input("Wrong file name or file does not exist. Choose between Buffer_tank_data.csv or Reactor_data.csv.\n"
-                    "Would like to choose again? [Y/N] \n")
-        if con != "Y":
-            print("Good bye!")
-            quit()
+        print("File does not exist. Choose between Buffer_tank_data.csv or Reactor_data.csv.")
+        con = input("Would like to choose another file? [Y/N] \n")

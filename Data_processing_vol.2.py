@@ -5,7 +5,7 @@ from datetime import datetime
 from pandas.plotting import register_matplotlib_converters
 register_matplotlib_converters()
 
-print('*** Hello in "Data processing vol. 1 "***')
+print('***Hello in "Data processing vol. 1***')
 
 def conv_dates_series(x):  # changing strings to date format
     date_list = x.values.tolist()
@@ -41,15 +41,13 @@ def dict(columns):
     print("The column indexes are as follows :  " + str(d))
     return d
 
-
 con = "Y"
-con_1 = "Y"
 while con == "Y":
 
     q1 = input("Which csv file would you like to choose? Buffer_tank_data.csv or Reactor_data.csv? \n")
 
     def process():
-        global con, con_1
+        global con
         df = pd.read_csv(str(q1), header = None)
         if q1 == "Buffer_tank_data.csv":
             df.columns = [
@@ -109,56 +107,37 @@ while con == "Y":
         df['Data/Date'] = pd.Series(conv_dates_series(df['Data/Date']))
         set_index(df)
         print(df.head())
+        d = dict(df.columns)
 
+        try:
+            ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-30: \n"))
+            ch_col = d[ch_num]
+            print(ch_col)
 
-        while con_1 == "Y":
-            d = dict(df.columns)
+            col_nam = str(ch_col)
 
-            try:
+            new_df = pd.DataFrame({col_nam: clean_values(drop_nan_values(df[col_nam])), }, columns=[col_nam])
+            new_df.index = drop_nan_values(df[col_nam]).index
+            print(new_df)
 
-                ch_num = int(input("For which parameter would you like to get a diagram? Enter a number between 1-"
-                                   + str(len(df.columns) - 1) + ": \n"))
-                ch_col = d[ch_num]
-                print(ch_col)
+            plt.plot(new_df.index, new_df)
+            plt.show()
 
-                col_nam = str(ch_col)
+        except KeyError:
+            print('Incorrect value. Must be an integer from range 1-30')
+            con = input("Would like to choose another file? [Y/N] \n")
 
-                new_df = pd.DataFrame({col_nam: clean_values(drop_nan_values(df[col_nam])), }, columns=[col_nam])
-                new_df.index = drop_nan_values(df[col_nam]).index
-                print(new_df)
+        except ValueError:
+            print('Incorrect value. Must be an integer from range 1-30')
+            con = input("Would like to choose another file? [Y/N] \n")
+        else:
+            con = input("Would like to choose another file? [Y/N] \n")
 
-                plt.plot(new_df.index, new_df)
-                plt.show()
-
-                con_1 = input("Choose next parameter in this file [Y/N]\n")
-                if con_1 == "Y":
-                    continue
-
-            except KeyError:
-                con_1 = input('Incorrect value. Must be an integer from range 1-' + str(len(df.columns) - 1)
-                              + "\nWould like to enter a new value? [Y/N] \n")
-                if con_1 == "Y":
-                    continue
-
-            except ValueError:
-                con_1 = input('Incorrect value. Must be an integer from range 1-' + str(len(df.columns)-1)
-                              + "\nWould like to enter a new value? [Y/N] \n")
-                if con_1 == "Y":
-                    continue
-
-        con_1 = input("Choose another file [Y/N]\n")
-
-        if con_1 == "N":
-            print("Good bye!")
-            quit()
         return df
 
     if q1 == "Buffer_tank_data.csv" or q1 == "Reactor_data.csv":
         process()
 
     else:
-        con = input("Wrong file name or file does not exist. Choose between Buffer_tank_data.csv or Reactor_data.csv.\n"
-                    "Would like to choose again? [Y/N] \n")
-        if con != "Y":
-            print("Good bye!")
-            quit()
+        print("File does not exist. Choose between Buffer_tank_data.csv or Reactor_data.csv.")
+        con = input("Would like to choose another file? [Y/N] \n")
